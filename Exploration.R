@@ -29,7 +29,7 @@ plot(as.factor(DamageType[DamageType$TotalDamage > 2e10,"EVTYPE"]),
 
 
 
-DamageType[which(DamageType$TotalDamage == max(DamageType$TotalDamage)), ]
+DamageType[DamageType$TotalDamage == max(DamageType$TotalDamage), ]
 DamageType[DamageType$TotalDamage > quantile(DamageType$TotalDamage, probs = .99),]
 DamageType[DamageType$TotalDamage > 2e10,]
 
