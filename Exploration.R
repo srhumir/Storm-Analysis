@@ -28,20 +28,59 @@ plot(DamageType[DamageType$TotalDamage > 2e10,"EVTYPE"],
      DamageType[DamageType$TotalDamage > 2e10,"TotalDamage"],
      type = "p", pch = "16")
 
-barplot(DamageType$TotalDamage, names.arg = DamageType$EVTYPE)
-barplot(log(DamageType$TotalDamage))
+
 boxplot(DamageType$TotalDamage)
 
 #the names are too much. There are replica due to difference in writing and 
 #and too detailed categorfification.
-namelist <- c("Wind", "Flood", "Thunderstorm", "TSTM", "Rain", "Tornado", "Storm", "Fire",
+namelist <- c("Flood", "Thunderstorm", "TSTM", "Rain", "Tornado", "Fire",
               "Squall", "Freez", "Hurricane", "Ice", "Hail", "waterspout", "Heat",
               "Glaze", "precipitation", "microburst", "Wet", "winter", "Cold",
               "Tsunami", "Snow", "Stream", "Lightning", "Dust", "Wintry Mix",
-              "Urban")
+              "Urban", "Wind")
 for ( x in namelist){
        DamageType <- sumduplicate(x, expensetable = DamageType)
 }
+library(Hmisc)
+DamageType$EVTYPE <- capitalize(tolower(DamageType$EVTYPE))
+#Thunderstorm and TSTM are the same
+sum <- sum(DamageType[DamageType$EVTYPE == "Thunderstorm" |
+                      DamageType$EVTYPE == "TSTM",2])
+new <- data.frame("Thunderstorm", sum)
+names(new) <- names(DamageType)
+DamageType <- rbind(DamageType, new)
+
+
+#omit too small damages
+SevereDamage <- subset(DamageType, TotalDamage >= 10000000)
+SevereDamage <- arrange(SevereDamage, desc(TotalDamage))
+#plot
+#newdamage <- ifelse(SevereDamage$TotalDamage/1e7 > 4000, 
+#                    SevereDamage$TotalDamage/1e7 - 2500, SevereDamage$TotalDamage/1e7)
+#newdamage <- ifelse(newdamage > 5500, newdamage - 5500, newdamage)
+newdamage <- SevereDamage$TotalDamage/1e7
+newdamage <- c(newdamage[4:length(newdamage)], newdamage[1:3])
+l <- length(newdamage)
+
+barplot(c(newdamage[1:(length(newdamage)-3)],0,0,0), 
+        names.arg = c(SevereDamage$EVTYPE[-(1:3)], SevereDamage$EVTYPE[1:3]), las =2)
+barplot(tail(newdamage,3)/15, las =2, add = T, col = "red", 
+        space = c(l-3+(l-2)*.2,.2,.2))
+title(ylab = "Total Damage (10 Million $)")
+
+for (i in 14:(length(newdamage)-3)){
+       text(i*1.2-.5, newdamage[i]+130, round(newdamage[i], digits = 0), srt = 90)
+}
+for (i in (length(newdamage)-2):length(newdamage)){
+       text(i*1.2-.5, newdamage[i]/15+230, round(newdamage[i], digits = 0), srt = 90)
+}
+
+
+
+abline(h = 1300)
+barplot(log(SevereDamage$TotalDamage))
+
+
 library(tm)
 stormCorpus <- Corpus(VectorSource(as.character(DamageType$EVTYPE)))
 stormCorpus <- tm_map(stormCorpus, PlainTextDocument)
