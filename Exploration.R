@@ -18,18 +18,17 @@ storms <- as.data.table(storms)
 storms[, PropDamage := propexp * PROPDMG]
 storms[, CropDamage := cropexp * CROPDMG]
 storms[, TotalDamage := PropDamage + CropDamage]
-stormsDamage <- storms[TotalDamage > 0,]
+storms$EVTYPE <- as.character(storms$EVTYPE)
+
+stormsDamage <- storms[TotalDamage > 0 | FATALITIES > 0 | INJURIES,]
 
 DamageType <- ddply(stormsDamage, .(EVTYPE), summarise, 
-                    TotalDamage = sum(TotalDamage))
-DamageType$EVTYPE <- as.character(DamageType$EVTYPE)
+                    TotalDamage = sum(TotalDamage), 
+                    TotalFatality = sum(FATALITIES),
+                    TotalInjuries = sum(INJURIES))
+#DamageType$EVTYPE <- as.character(DamageType$EVTYPE)
 DamageType[DamageType$EVTYPE == "TORNAO", 1] <- "TORNADO"
-plot(DamageType[DamageType$TotalDamage > 2e10,"EVTYPE"],
-     DamageType[DamageType$TotalDamage > 2e10,"TotalDamage"],
-     type = "p", pch = "16")
 
-
-boxplot(DamageType$TotalDamage)
 
 #the names are too much. There are replica due to difference in writing and 
 #and too detailed categorfification.
@@ -44,20 +43,20 @@ for ( x in namelist){
 library(Hmisc)
 DamageType$EVTYPE <- capitalize(tolower(DamageType$EVTYPE))
 #Thunderstorm and TSTM are the same
-sum <- sum(DamageType[DamageType$EVTYPE == "Thunderstorm" |
-                      DamageType$EVTYPE == "TSTM",2])
-new <- data.frame("Thunderstorm", sum)
+index <- which(DamageType$EVTYPE ==  "Thunderstorm" |
+               DamageType$EVTYPE == "Tstm")
+sum <- apply(DamageType[index,c(names(DamageType)[2:4])],2,sum)
+new <- data.frame("Thunderstorm", t(sum))
 names(new) <- names(DamageType)
-DamageType <- rbind(DamageType, new)
+DamageType <- rbind(DamageType[-index,], new)
 
 
+
+#plot damages
 #omit too small damages
 SevereDamage <- subset(DamageType, TotalDamage >= 10000000)
 SevereDamage <- arrange(SevereDamage, desc(TotalDamage))
-#plot
-#newdamage <- ifelse(SevereDamage$TotalDamage/1e7 > 4000, 
-#                    SevereDamage$TotalDamage/1e7 - 2500, SevereDamage$TotalDamage/1e7)
-#newdamage <- ifelse(newdamage > 5500, newdamage - 5500, newdamage)
+
 newdamage <- SevereDamage$TotalDamage/1e7
 newdamage <- c(newdamage[4:length(newdamage)], newdamage[1:3])
 l <- length(newdamage)
@@ -90,20 +89,5 @@ stormCorpus <- tm_map(stormCorpus, stemDocument)
 stormCorpus <- tm_map(stormCorpus, content_transformer(toupper))
 library(wordcloud)
 wordcloud(stormCorpus)
-c
 
 
-
-
-library(ggplot2)
-boxplot(DamageType$TotalDamage, ylim = c(1000, 4000000)), data = DamageType[1:5,])
-
-
-
-DamageType[DamageType$TotalDamage == max(DamageType$TotalDamage), ]
-DamageType[DamageType$TotalDamage > quantile(DamageType$TotalDamage, probs = .99),]
-DamageType[DamageType$TotalDamage > 2e10,]
-
-plot(stormsDamage1q$BGN_DATE, stormsDamage1q$TotalDamage)
-which(stormsDamage1q$TotalDamage == max(stormsDamage1q$TotalDamage))
-stormsDamage1q[113875,]
