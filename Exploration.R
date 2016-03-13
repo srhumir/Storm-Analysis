@@ -74,24 +74,27 @@ for (i in 14:(length(newdamage)-3)){
        text(i*1.2-.5, newdamage[i]+130, round(newdamage[i], digits = 0), srt = 90)
 }
 for (i in (length(newdamage)-2):length(newdamage)){
-       text(i*1.2-.5, newdamage[i]/15+230, round(newdamage[i], digits = 0), srt = 90)
+       text(i*1.2-.5, newdamage[i]/15+150, round(newdamage[i], digits = 0), srt = 90)
 }
 
 
 #plot injuries and fatalities
-FatInj <- subset(DamageType, TotalFatality > 5 | TotalInjuries > 15 )
-FatInj <- arrange(FatInj, desc(TotalInjuries), desc(TotalFatality))
+FatInj <- subset(DamageType, TotalFatality > 30 | TotalInjuries > 100 )
+FatInj <- arrange(FatInj, desc(TotalFatality), desc(TotalInjuries))
 
 barplot(t(as.matrix(rbind(FatInj[-1,c("TotalFatality", "TotalInjuries")],c(0,0)))),
         horiz = F, names.arg = c(FatInj$EVTYPE[-1],FatInj$EVTYPE[1]), las = 2, 
         col = c("blue", "gray"), beside = F,
         legend.text = T, args.legend = c(xjust = 1.3))
-barplot(t(as.matrix(FatInj[1,c("TotalFatality", "TotalInjuries")]))/10, add = T, 
-        las =2, names.arg = "", space = dim(FatInj)[1]*1.2 -1, col = c("red", "gray28"))  
-text(dim(FatInj)[1]*1.2 -.5, FatInj$TotalFatality[1]/10 + 800, FatInj$TotalFatality[1], 
-     srt = 0, col = "red")
-text(dim(FatInj)[1]*1.2 -.5, FatInj$TotalInjuries[1]/10 + 1200, FatInj$TotalInjuries[1], 
-     srt = 0)
+barplot(t(as.matrix(FatInj[1,c("TotalFatality", "TotalInjuries")]))/7, add = T, 
+        las =2, names.arg = "", space = dim(FatInj)[1]*1.2 -1, 
+        col = c("red", "gray28"), beside = F)  
+text(dim(FatInj)[1]*1.2 -.5, FatInj$TotalFatality[1]/10 + 1400,
+     FatInj$TotalFatality[1], 
+     srt = 90, col = "red")
+text(dim(FatInj)[1]*1.2 -.5, FatInj$TotalInjuries[1]/10 + 1200,
+     FatInj$TotalInjuries[1] + FatInj$TotalFatality[1], 
+     srt = 90, col = "white")
 
 
 

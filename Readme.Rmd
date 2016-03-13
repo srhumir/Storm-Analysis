@@ -1,0 +1,7 @@
+---
+title: "Finding the most harmfull weather disaters"
+author: "Reza"
+date: "March 13, 2016"
+output: html_document
+---
+#Synopsis 
