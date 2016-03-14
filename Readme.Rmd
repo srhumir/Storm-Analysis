@@ -1,7 +1,162 @@
 ---
 title: "Finding the most harmfull weather disaters"
-author: "Reza"
+author: "Reza Hosseini"
 date: "March 13, 2016"
 output: html_document
 ---
 #Synopsis 
+Storms and other sever weather events can cause health and econimic problems. In this report I explore the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database in order to find weather disasters whith the most health and economic problems.
+
+The results show that Tornado made the most both human fatalities and total fatality and injuries with more than 5600 fatalities and 90 thousand injuries from 1950 to today. After that with a big gap comes severe heat with more than 3000 death and around 10 thousand injuries. 
+
+In the sense of econimic consequences, the worse event is flood with more than 140 billion dollars followign by Huriacne with 77 and Storm surge with 42 billion dollars.
+
+#Data Proccesing
+
+The NOAA storm databse contains a variety of informations about individual weather disasters including their time and place of occurance, property damage, number of death and injuroes, etc.
+
+To run this report you need to have an internet coonection at least for the first time you run it. Please be patient the first run is quite time consuming.
+
+The analysis is not in three steps. 
+
+ -- Downoading and loading the data.
+ 
+ -- Summerising and tiding up the data.
+ 
+ -- Plotting the total fatalitiy, injury and damage of event types.
+
+###Downloading and loading the data
+The data will be downloaded directly from the web (if not already in the data folder under the working directory) and loaded into R. This step is quite time consuming due to volume of the data and will be cashed for the sake of effeciency. 
+```{r cache = TRUE}
+if (!dir.exists("data")) dir.create("data")
+if (!file.exists("./data/Storm-Data.csv.bz2")) {
+        download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2",
+                      destfile = "./data/Storm-Data.csv.bz2")
+}
+storms <- read.csv("./data/Storm-Data.csv.bz2")
+```
+
+###Summerizing the data
+The dataset contains some columns which are the most important for usm. "EVTYPE", the type of the event, "FATALITIES", number of fatalities, "INJURIES" number of injuries, "PROPDMG", "PROPDMGEXP", "CROPDMG" and "CROPDMGEXP", repectively short version numbers of property and cropland damages and the corresponding exponents (for instance 5 "PROPDMG" with "PROPDMGEXP" of "M" meand 5 million dolars property damage). 
+
+To have the actual damage first this units needs to be converted to numbers. Unfortunately there is no proper explanation of the units in the documentation, but searchin in the web I could concude that the conversion table is as follows which I saved them in a variable named 'convert'.
+```{r}
+convert <- data.frame(exp = c(as.character(levels(storms$PROPDMGEXP)),"k"), value = c(0,0,0,10,10,10,10,10,10,10,10,10,10,1000000000,100,100,1000,1000000,100000, 1000))
+```
+
+```{r echo = F}
+convert
+```
+
+To convert these units (exponents) to numbers I write a function nemad "relable" which takes the exponents column and the converting table and ouput a vector of numbers corrssponding to the imput exponenets. 
+```{r}
+relable <- function(oldfactor, convert){
+        newvalue <- as.character(oldfactor)
+        for (i in unique(newvalue)){
+                newvalue[newvalue == i] <- convert$value[convert$exp == i]
+        }
+        as.numeric(newvalue)
+}
+```
+Using the "relable" function I produce two vectors corresponding to the property and cropland expenses of the events in the dataset.
+```{r}
+propexp <- relable(storms$PROPDMGEXP, convert)
+cropexp <- relable(storms$CROPDMGEXP, convert)
+```
+Using these two vectors I computed the actual property, cropland and total damage of each event.
+```{r message=F}
+library(plyr)
+library(dplyr)
+library(data.table)
+storms <- as.data.table(storms)
+storms[, PropDamage := propexp * PROPDMG]
+storms[, CropDamage := cropexp * CROPDMG]
+storms[, TotalDamage := PropDamage + CropDamage]
+```
+Then I subset the dataset to evenets which actually made human or economic problems and summerized the data based on the total damage, fatalitiy and injuries made by each event type.
+```{r}
+#storm with positive damage ...
+harmfullStorms <- storms[TotalDamage > 0 | FATALITIES > 0 | INJURIES > 0,]
+#summerize
+DamageType <- ddply(harmfullStorms, .(EVTYPE), summarise, 
+                    TotalDamage = sum(TotalDamage), 
+                    PropDamage = sum(PropDamage),
+                    CropDamage = sum(CropDamage),
+                    TotalFatality = sum(FATALITIES),
+                    TotalInjuries = sum(INJURIES))
+```
+Summerzing is not finished yet. There are lots of duplicates in the data set. Lots of similar event types are stored seperately due to different spelling, spacing and using special charachters. plus some events are saved too detaled.
+First of all I noted that TORNADO once was missspeled as TORNAO and corrected it.
+```{r}
+DamageType[DamageType$EVTYPE == "TORNAO", 1] <- "TORNADO"
+```
+To have better summerization, I wrote a function which gets a word and the summerized dataset and summerize merge the events which have that word in their EVETYPE. 
+```{r}
+sumduplicate <- function(pattern, expensetable){
+       index <- grep(tolower(pattern), tolower(expensetable[,1]))
+       sum <- apply(expensetable[index,c(names(expensetable)[2:4])],2,sum)
+       new <- data.frame(pattern, t(sum))
+       names(new) <- names(expensetable)
+       rbind(expensetable[-index,],new)
+}
+```
+Exploring the datset I conluded that one should merge the rows contining the following words togheter.
+```{r}
+namelist <- c("Flood", "Thunderstorm", "TSTM", "Rain", "Tornado", "Fire", "Squall", "Freez", "Hurricane", "Ice", "Hail", "waterspout", "Heat", "Glaze", "precipitation", "microburst", "Wet", "winter", "Cold", "Tsunami", "Snow", "Stream", "Lightning", "Dust", "Wintry Mix", "Urban", "Wind")
+```
+And ran this list of words in the "sumdupliacte" function mensioned above. Making a much more compact dataset.
+```{r}
+for ( x in namelist){
+       DamageType <- sumduplicate(x, expensetable = DamageType)
+}
+```
+I also noted that Thudersome sometimes where called TSTM, so I merged the two occurances.
+```{r}
+#Thunderstorm and TSTM are the same
+index <- which(DamageType$EVTYPE ==  "Thunderstorm" | DamageType$EVTYPE == "TSTM")
+sum <- apply(DamageType[index,c(names(DamageType)[2:4])],2,sum)
+new <- data.frame("Thunderstorm", t(sum))
+names(new) <- names(DamageType)
+DamageType <- rbind(DamageType[-index,], new)
+```
+The data is acceptabely summersized. As the last step, I capitalized the first letter of the eventypes names to be shown more nicely in the plots.
+```{r message= F}
+library(Hmisc)
+DamageType$EVTYPE <- capitalize(tolower(DamageType$EVTYPE))
+```
+
+###Plot of the summerized data
+In this section we draw plotts showing the total human loses and damages cased by event types.
+
+####Fatalities and injuries
+To have a understandable diagram I summerized the data by the events having at least 30 fatalities or 100 injuries.
+```{r}
+#plot injuries and fatalities
+FatInj <- subset(DamageType, TotalFatality > 30 | TotalInjuries > 100)
+```
+Then the remaining data are arranged dessendingly by the total fatalities and then total injuries.
+```{r}
+FatInj <- arrange(FatInj, desc(TotalFatality), desc(TotalInjuries))
+```
+Finaly a barplot which shoves total injeries on top of total fatalities so the total height of the bar is the sum of fatalities and injuries of each event. Tornado by a very big fataliy and a huge total huge number of total injuries in showed with seperate color at the most right side of the plot with a different scale. So that the other event could be seeable. 
+```{r  fig.width=10, fig.height=5}
+par(mar = c(8.4,4,4,4) + .1)
+barplot(t(as.matrix(rbind(FatInj[-1,c("TotalFatality", "TotalInjuries")],c(0,0)))),
+        horiz = F, names.arg = c(FatInj$EVTYPE[-1],FatInj$EVTYPE[1]), las = 2, 
+        col = c("blue", "gray"), beside = F,
+        legend.text = T, args.legend = c(xjust = 1.5))
+barplot(t(as.matrix(FatInj[1,c("TotalFatality", "TotalInjuries")]))/7, add = T, 
+        las =2, names.arg = "", space = dim(FatInj)[1]*1.2 -1, 
+        col = c("red", "gray28"), beside = F)  
+text(dim(FatInj)[1]*1.2 -.5, FatInj$TotalFatality[1]/10 + 1400,
+     FatInj$TotalFatality[1], 
+     srt = 90, col = "red")
+text(dim(FatInj)[1]*1.2 -.5, FatInj$TotalInjuries[1]/10 + 1200,
+     FatInj$TotalInjuries[1] + FatInj$TotalFatality[1], 
+     srt = 90, col = "white")
+title(main = "Total number of fatalities and injuries cased by weather events 1950-2015")
+```
+One can see that the most harmfull type of weather event has been Tornado and after that with a big difference comes heat anf flood.
+
+####Econimical expenses
+Economical expenses consists of property damages and cropland damages. We sum 
