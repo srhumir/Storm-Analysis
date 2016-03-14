@@ -60,23 +60,24 @@ DamageType$EVTYPE <- capitalize(tolower(DamageType$EVTYPE))
 SevereDamage <- subset(DamageType, TotalDamage >= 10000000)
 SevereDamage <- arrange(SevereDamage, desc(TotalDamage))
 
-newdamage <- SevereDamage[,c("PropDamage","CropDamage")]/1e6
+newdamage <- SevereDamage[,c("PropDamage","CropDamage")]/1e9
 newdamage <- as.matrix(rbind(newdamage[-c(1:3),], newdamage[1:3,]))
 l <- length(newdamage[,1])
 
+par(mar = c(8.4,4,4,4) + .1)
 barplot(t(rbind(newdamage[1:(l-3),],matrix(0,nrow = 3,ncol = 2))), 
         names.arg = c(SevereDamage$EVTYPE[-(1:3)], SevereDamage$EVTYPE[1:3]),
         las =2, col = c("blue", "gray"))
 barplot(t(tail(newdamage,3))/15, las =2, add = T, col = c("red","gray"), 
-        space = c(l-3+(l-2)*.2,.2,.2), names.arg = "")
+        space = c(l-3+(l-2)*.2,.2,.2), names.arg = c("","",""))
 title(main = "Sever damages made by natural disasters", 
-      ylab = "Total Damage (Million $)")
+      ylab = "Total Damage (billion $)")
 text(16,13000,"Red bars are associated to outliers")
 for (i in 14:(l-3)){
-       text(i*1.2-.5, newdamage[i]+1300, round(sum(newdamage[i,]), digits = 0), srt = 90)
+       text(i*1.2-.5, sum(newdamage[i,])+1.300, round(sum(newdamage[i,]), digits = 2), srt = 90)
 }
 for (i in (l-2):l){
-       text(i*1.2-.5, newdamage[i]/15+1000, round(sum(newdamage[i,]), digits = 0), srt = 90)
+       text(i*1.2-.5, 3.000, round(sum(newdamage[i,]), digits = 0), srt = 90)
 }
 
 
