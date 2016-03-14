@@ -189,3 +189,10 @@ for (i in (l-2):l){
        text(i*1.2-.5, 2.000, round(sum(newdamage[i,]), digits = 0), srt = 90)
 }
 ```
+As it is seen the most expensive type of wather event has been flood, after it come Hurricane anf Storm surge. The fourth expensive event which is Tornado has made very fewer damage with repect to these three.
+
+Plus in all cases exept Ice and Heat the amount of property damage is much less that the amount of cropland damage.
+
+#References
+Storm database, U.S. National Oceanic and Atmospheric Administration's (NOAA), available online at
+https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2
