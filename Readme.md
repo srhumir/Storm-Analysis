@@ -26,13 +26,11 @@ To run this report you need to have an internet connection at least for
 the first time you run it. Please be patient the first run is quite time
 consuming.
 
-The analysis is not in three steps.
+The analysis is done in two steps.
 
 -- Downloading and loading the data.
 
 -- Summarizing and tiding up the data.
-
--- Plotting the total fatality, injury and damage of event types.
 
 ### Downloading and loading the data
 
@@ -180,10 +178,12 @@ plots.
     library(Hmisc)
     DamageType$EVTYPE <- capitalize(tolower(DamageType$EVTYPE))
 
-### Plot of the summerized data
+Results
+=======
 
-In this section we draw plots showing the total human loses and damages
-cased by event types.
+In this section we answer the main questions of the analysis i.e.
+finding the most harmful weather events to human health and economy and
+show the results in plots.
 
 #### Fatalities and injuries
 

@@ -17,14 +17,12 @@ The NOAA storm database contains a variety of information about individual weath
 
 To run this report you need to have an internet connection at least for the first time you run it. Please be patient the first run is quite time consuming.
 
-The analysis is not in three steps. 
+The analysis is done in two steps. 
 
  -- Downloading and loading the data.
  
  -- Summarizing and tiding up the data.
  
- -- Plotting the total fatality, injury and damage of event types.
-
 ###Downloading and loading the data
 The data will be downloaded directly from the web (if not already in the data folder under the working directory) and loaded into R. This step is quite time consuming due to volume of the data and will be cashed for the sake of efficiency. 
 ```{r cache = TRUE}
@@ -125,9 +123,9 @@ The data is acceptably summarized. As the last step, I capitalized the first let
 library(Hmisc)
 DamageType$EVTYPE <- capitalize(tolower(DamageType$EVTYPE))
 ```
+#Results
+In this section we answer the main questions of the analysis i.e. finding the most harmful weather events to human health and economy and show the results in plots.
 
-###Plot of the summerized data
-In this section we draw plots showing the total human loses and damages cased by event types.
 
 ####Fatalities and injuries
 To have a understandable diagram I summarized the data by the events having at least 30 fatalities or 100 injuries.
