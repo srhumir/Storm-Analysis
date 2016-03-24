@@ -7,15 +7,13 @@ output: md_document
 #Synopsis 
 Storms and other sever weather events can cause health and economic problems. In this report I explore the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database in order to find weather disasters whit the most health and economic problems.
 
-The results show that Tornado made the most both human fatalities and total fatality and injuries with more than 5600 fatalities and 90 thousand injuries from 1950 to today. After that with a big gap comes severe heat with more than 3000 death and around 10 thousand injuries. 
+The results show that Tornado has been the most harmfull event  both in the case human fatalities and injuries with more than 5600 fatalities and 90 thousand injuries from 1950 to today. After that with a big gap comes severe heat with more than 3000 death and around 10 thousand injuries. 
 
 In the sense of economic consequences, the worse event is flood with more than 140 billion dollars following by Hurricane with 77 and Storm surge with 42 billion dollars.
 
 #Data Proccesing
 
 The NOAA storm database contains a variety of information about individual weather disasters including their time and place of occurrence, property damage, number of death and injuries, etc.
-
-To run this report you need to have an internet connection at least for the first time you run it. Please be patient the first run is quite time consuming.
 
 The analysis is done in two steps. 
 
@@ -35,9 +33,9 @@ storms <- read.csv("./data/Storm-Data.csv.bz2")
 ```
 
 ###Summerizing the data
-The data set contains some columns which are the most important for us. "EVTYPE", the type of the event, "FATALITIES", number of fatalities, "INJURIES" number of injuries, "PROPDMG", "PROPDMGEXP", "CROPDMG" and "CROPDMGEXP", receptively short version numbers of property and cropland damages and the corresponding exponents (for instance 5 "PROPDMG" with "PROPDMGEXP" of "M" means 5 million dollars property damage). 
+Among fields of the data set,some columns are the most important for us. "EVTYPE", the type of the event, "FATALITIES", number of fatalities, "INJURIES" number of injuries, "PROPDMG", "PROPDMGEXP", "CROPDMG" and "CROPDMGEXP", respectively, short version numbers of property and cropland damages and the corresponding exponents (for instance 5 "PROPDMG" with "PROPDMGEXP" of "M" means 5 million dollars property damage). 
 
-To have the actual damage first this units needs to be converted to numbers. Unfortunately there is no proper explanation of the units in the documentation, but searching in the web I could conclude that the conversion table is as follows which I saved them in a variable named 'convert'.
+To have the actual damage, exponents needs to be converted to numbers. Unfortunately there is no proper explanation of the units in the documentation, but searching in the web I could conclude that the conversion table is as follows which I saved them in a variable named 'convert'.
 ```{r}
 convert <- data.frame(exp = c(as.character(levels(storms$PROPDMGEXP)),"k"), value = c(0,0,0,10,10,10,10,10,10,10,10,10,10,1000000000,100,100,1000,1000000,100000, 1000))
 ```
@@ -46,7 +44,7 @@ convert <- data.frame(exp = c(as.character(levels(storms$PROPDMGEXP)),"k"), valu
 convert
 ```
 
-To convert these units (exponents) to numbers I write a function named "relable" which takes the exponents column and the converting table and output a vector of numbers corresponding to the input exponents. 
+To convert these units (exponents) to numbers I write a function named "relable" which takes the exponents field and the converting table and output a vector of numbers corresponding to the input exponents. 
 ```{r}
 relable <- function(oldfactor, convert){
         newvalue <- as.character(oldfactor)
