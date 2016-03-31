@@ -6,10 +6,11 @@ problems. In this report I explore the U.S. National Oceanic and
 Atmospheric Administration's (NOAA) storm database in order to find
 weather disasters whit the most health and economic problems.
 
-The results show that Tornado made the most both human fatalities and
-total fatality and injuries with more than 5600 fatalities and 90
-thousand injuries from 1950 to today. After that with a big gap comes
-severe heat with more than 3000 death and around 10 thousand injuries.
+The results show that Tornado has been the most harmfull event both in
+the case human fatalities and injuries with more than 5600 fatalities
+and 90 thousand injuries from 1950 to today. After that with a big gap
+comes severe heat with more than 3000 death and around 10 thousand
+injuries.
 
 In the sense of economic consequences, the worse event is flood with
 more than 140 billion dollars following by Hurricane with 77 and Storm
@@ -21,10 +22,6 @@ Data Proccesing
 The NOAA storm database contains a variety of information about
 individual weather disasters including their time and place of
 occurrence, property damage, number of death and injuries, etc.
-
-To run this report you need to have an internet connection at least for
-the first time you run it. Please be patient the first run is quite time
-consuming.
 
 The analysis is done in two steps.
 
@@ -48,16 +45,17 @@ the sake of efficiency.
 
 ### Summerizing the data
 
-The data set contains some columns which are the most important for us.
+Among fields of the data set,some columns are the most important for us.
 "EVTYPE", the type of the event, "FATALITIES", number of fatalities,
 "INJURIES" number of injuries, "PROPDMG", "PROPDMGEXP", "CROPDMG" and
-"CROPDMGEXP", receptively short version numbers of property and cropland
-damages and the corresponding exponents (for instance 5 "PROPDMG" with
-"PROPDMGEXP" of "M" means 5 million dollars property damage).
+"CROPDMGEXP", respectively, short version numbers of property and
+cropland damages and the corresponding exponents (for instance 5
+"PROPDMG" with "PROPDMGEXP" of "M" means 5 million dollars property
+damage).
 
-To have the actual damage first this units needs to be converted to
-numbers. Unfortunately there is no proper explanation of the units in
-the documentation, but searching in the web I could conclude that the
+To have the actual damage, exponents needs to be converted to numbers.
+Unfortunately there is no proper explanation of the units in the
+documentation, but searching in the web I could conclude that the
 conversion table is as follows which I saved them in a variable named
 'convert'.
 
@@ -86,7 +84,7 @@ conversion table is as follows which I saved them in a variable named
     ## 20   k 1e+03
 
 To convert these units (exponents) to numbers I write a function named
-"relable" which takes the exponents column and the converting table and
+"relable" which takes the exponents field and the converting table and
 output a vector of numbers corresponding to the input exponents.
 
     relable <- function(oldfactor, convert){
@@ -130,15 +128,16 @@ fatality and injuries made by each event type.
 
 Summarizing is not finished yet. There are lots of duplicates in the
 data set. Lots of similar event types are stored separately due to
-different spelling, spacing and using special characters. plus some
-events are saved too detailed. First of all I noted that TORNADO once
-was misspelled as TORNAO and corrected it.
+different spelling, spacing and using special characters. Plus some
+events are saved with a too much detailed name.
+
+First of all I noted that TORNADO once was misspelled as TORNAO and
+corrected it.
 
     DamageType[DamageType$EVTYPE == "TORNAO", 1] <- "TORNADO"
 
-To have more neat data set, I wrote a function which gets a word and the
-summarized data set and summarize merge the events which have that word
-in their EVETYPE.
+To have a more neat data set, I wrote a function which gets a word and
+merge the events which have that word in their EVETYPE.
 
     sumduplicate <- function(pattern, expensetable){
            index <- grep(tolower(pattern), tolower(expensetable[,1]))
@@ -153,8 +152,8 @@ containing the following words together.
 
     namelist <- c("Flood", "Thunderstorm", "TSTM", "Rain", "Tornado", "Fire", "Squall", "Freez", "Hurricane", "Ice", "Hail", "waterspout", "Heat", "Glaze", "precipitation", "microburst", "Wet", "winter", "Cold", "Tsunami", "Snow", "Stream", "Lightning", "Dust", "Wintry Mix", "Urban", "Wind")
 
-And ran this list of words in the "sumdupliacte" function mentioned
-above. Making a much more compact data set.
+I ran this list of words in the "sumdupliacte" function mentioned above.
+Making a much more compact data set.
 
     for ( x in namelist){
            DamageType <- sumduplicate(x, expensetable = DamageType)
@@ -187,7 +186,7 @@ show the results in plots.
 
 #### Fatalities and injuries
 
-To have a understandable diagram I summarized the data by the events
+To have an understandable diagram, I summarized the data by the events
 having at least 30 fatalities or 100 injuries.
 
     #plot injuries and fatalities
@@ -198,12 +197,11 @@ fatalities and then total injuries.
 
     FatInj <- arrange(FatInj, desc(TotalFatality), desc(TotalInjuries))
 
-Finally a bar plot which shoves total injuries on top of total
-fatalities so the total height of the bar is the sum of fatalities and
-injuries of each event. Tornado by a very big fatality and a huge total
-huge number of total injuries in showed with separate color at the most
-right side of the plot with a different scale. So that the other event
-could be see-able.
+Finally a bar plot which shows total injuries on top of total fatalities
+so the total height of the bar is the sum of fatalities and injuries of
+each event. Tornado by a very big fatality and a huge total number of
+injuries is showed with separate color at the most right side of the
+plot with a different scale. So that the other event could be see-able.
 
     par(mar = c(8.4,4,4,4) + .1)
     barplot(t(as.matrix(rbind(FatInj[-1,c("TotalFatality", "TotalInjuries")],c(0,0)))),
@@ -223,24 +221,24 @@ could be see-able.
 
 ![](Readme_files/figure-markdown_strict/unnamed-chunk-16-1.png)<!-- -->
 One can see that the most harmful type of weather event has been Tornado
-and after that with a big difference comes heat and flood.
+and after that with a big difference come heat and flood.
 
 #### Econimical expenses
 
 Economical expenses consists of property damages and cropland damages.
-We draw a bar plot showing cropland damages on the top of property
+We draw a barplot showing cropland damages on the top of property
 damage. Three of the event types make considerably more damage with
-respect to others so I plotted then on the right most of the plot with
-different scale and color. The total damage of them are written in
+respect to others, so I plotted them on the right most of the plot with
+different scale and color. The total damage made by them are written in
 million dollars inside their corresponding bars.
 
 First of all the data are subset with just the damages over 10 million
-dollars for the sake of simplicity of the plot.
+dollars for the sake of simplicity.
 
     SevereDamage <- subset(DamageType, TotalDamage >= 1e7)
     SevereDamage <- arrange(SevereDamage, desc(TotalDamage))
 
-Then the plot will be drown. Some computations need to be done to put
+Then the plot will be drawn. Some computations need to be done to put
 the outlires on the right with different scale
 
     newdamage <- SevereDamage[,c("PropDamage","CropDamage")]/1e9
@@ -269,7 +267,7 @@ after it come Hurricane and Storm surge. The fourth expensive event
 which is Tornado has made very fewer damage with respect to these three.
 
 Plus in all cases except Ice and Heat the amount of property damage is
-much less that the amount of cropland damage.
+much more that the amount of cropland damage.
 
 References
 ==========

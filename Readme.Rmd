@@ -81,12 +81,13 @@ DamageType <- ddply(harmfullStorms, .(EVTYPE), summarise,
                     TotalFatality = sum(FATALITIES),
                     TotalInjuries = sum(INJURIES))
 ```
-Summarizing is not finished yet. There are lots of duplicates in the data set. Lots of similar event types are stored separately due to different spelling, spacing and using special characters. plus some events are saved too detailed.
+Summarizing is not finished yet. There are lots of duplicates in the data set. Lots of similar event types are stored separately due to different spelling, spacing and using special characters. Plus some events are saved with a too much  detailed name.
+
 First of all I noted that TORNADO once was misspelled as TORNAO and corrected it.
 ```{r}
 DamageType[DamageType$EVTYPE == "TORNAO", 1] <- "TORNADO"
 ```
-To have more neat data set, I wrote a function which gets a word and the summarized data set and summarize merge the events which have that word in their EVETYPE. 
+To have a more neat data set, I wrote a function which gets a word and merge the events which have that word in their EVETYPE. 
 ```{r}
 sumduplicate <- function(pattern, expensetable){
        index <- grep(tolower(pattern), tolower(expensetable[,1]))
@@ -100,7 +101,7 @@ Exploring the data set I concluded that one should merge the rows containing the
 ```{r}
 namelist <- c("Flood", "Thunderstorm", "TSTM", "Rain", "Tornado", "Fire", "Squall", "Freez", "Hurricane", "Ice", "Hail", "waterspout", "Heat", "Glaze", "precipitation", "microburst", "Wet", "winter", "Cold", "Tsunami", "Snow", "Stream", "Lightning", "Dust", "Wintry Mix", "Urban", "Wind")
 ```
-And ran this list of words in the "sumdupliacte" function mentioned above. Making a much more compact data set.
+I ran this list of words in the "sumdupliacte" function mentioned above. Making a much more compact data set.
 ```{r}
 for ( x in namelist){
        DamageType <- sumduplicate(x, expensetable = DamageType)
@@ -126,7 +127,7 @@ In this section we answer the main questions of the analysis i.e. finding the mo
 
 
 ####Fatalities and injuries
-To have a understandable diagram I summarized the data by the events having at least 30 fatalities or 100 injuries.
+To have an understandable diagram, I summarized the data by the events having at least 30 fatalities or 100 injuries.
 ```{r}
 #plot injuries and fatalities
 FatInj <- subset(DamageType, TotalFatality > 30 | TotalInjuries > 100)
@@ -135,7 +136,7 @@ Then the remaining data are arranged descendingly by the total fatalities and th
 ```{r}
 FatInj <- arrange(FatInj, desc(TotalFatality), desc(TotalInjuries))
 ```
-Finally a bar plot which shoves total injuries on top of total fatalities so the total height of the bar is the sum of fatalities and injuries of each event. Tornado by a very big fatality and a huge total huge number of total injuries in showed with separate color at the most right side of the plot with a different scale. So that the other event could be see-able. 
+Finally a bar plot which shows total injuries on top of total fatalities so the total height of the bar is the sum of fatalities and injuries of each event. Tornado by a very big fatality and a huge total number of injuries is showed with separate color at the most right side of the plot with a different scale. So that the other event could be see-able. 
 ```{r  fig.width=10, fig.height=5}
 par(mar = c(8.4,4,4,4) + .1)
 barplot(t(as.matrix(rbind(FatInj[-1,c("TotalFatality", "TotalInjuries")],c(0,0)))),
@@ -153,17 +154,17 @@ text(dim(FatInj)[1]*1.2 -.5, FatInj$TotalInjuries[1]/10 + 1200,
      srt = 90, col = "white")
 title(main = "Total number of fatalities and injuries cased by weather events 1950-2015")
 ```
-One can see that the most harmful type of weather event has been Tornado and after that with a big difference comes heat and flood.
+One can see that the most harmful type of weather event has been Tornado and after that with a big difference come heat and flood.
 
 ####Econimical expenses
-Economical expenses consists of property damages and cropland damages. We draw a bar plot showing cropland damages on the top of property damage. Three of the event types make considerably more damage with respect to others so I plotted then on the right most of the plot with different scale and color. The total damage of them are written in million dollars inside their corresponding bars.
+Economical expenses consists of property damages and cropland damages. We draw a barplot showing cropland damages on the top of property damage. Three of the event types make considerably more damage with respect to others, so I plotted them on the right most of the plot with different scale and color. The total damage made by them are written in million dollars inside their corresponding bars.
 
-First of all the data are subset with just the damages over 10 million dollars for the sake of simplicity of the plot.
+First of all the data are subset with just the damages over 10 million dollars for the sake of simplicity.
 ```{r}
 SevereDamage <- subset(DamageType, TotalDamage >= 1e7)
 SevereDamage <- arrange(SevereDamage, desc(TotalDamage))
 ```
-Then the plot will be drown. Some computations need to be done to put the outlires on the right with different scale
+Then the plot will be drawn. Some computations need to be done to put the outlires on the right with different scale
 ```{r  fig.width=10, fig.height=5}
 newdamage <- SevereDamage[,c("PropDamage","CropDamage")]/1e9
 newdamage <- as.matrix(rbind(newdamage[-c(1:3),], newdamage[1:3,]))
@@ -187,7 +188,7 @@ for (i in (l-2):l){
 ```
 As it is seen the most expensive type of weather event has been flood, after it come Hurricane and Storm surge. The fourth expensive event which is Tornado has made very fewer damage with respect to these three.
 
-Plus in all cases except Ice and Heat the amount of property damage is much less that the amount of cropland damage.
+Plus in all cases except Ice and Heat the amount of property damage is much more that the amount of cropland damage.
 
 #References
 Storm database, U.S. National Oceanic and Atmospheric Administration's (NOAA), available online at
